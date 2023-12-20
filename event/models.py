@@ -18,5 +18,4 @@ class Discount(models.Model):
     valid_until    = models.DateTimeField()
     rate_limit     = models.IntegerField()
     event          = models.ForeignKey(Event, on_delete=models.CASCADE)
-    organizer_user = models.ForeignKey(OrganizerUser, on_delete=models.CASCADE)
  
