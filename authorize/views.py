@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.views import View
 from .models import OrganizerUser, AttenderUser
 from django.contrib.auth.models import User
