@@ -34,10 +34,6 @@ def applyDiscount(req, eid):
     # todo get discount data from req
     pass
 
-def deleteDiscount(req, eid):
-    # todo get discount data from req
-    pass
-
 def viewEvent(req, eid):
     pass
 

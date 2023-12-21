@@ -8,7 +8,6 @@ urlpatterns = [
     path("attender/add/<int:eid>/", views.addEventAttender),
     path("attender/delete/<int:eid>/", views.deleteEventFromAttender),
     path("discount/apply/<int:eid>/", views.applyDiscount),
-    path("discount/delete/<int:eid>/", views.deleteDiscount),
     path("<int:eid>/", views.viewEvent),
     path("all/", views.viewAllEvents),
 ]
