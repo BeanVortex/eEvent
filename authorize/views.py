@@ -66,7 +66,9 @@ class Login(View):
         return render(req, "auth/login.html", {})
 
     def post(self, req):
-        return doLogin(req)
+        username = req.POST["username"]
+        password = req.POST["password"]
+        return doLogin(req, username, password)
 
 
 

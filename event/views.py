@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 from django.views import View
 
 def index(req):
-    pass
+    return HttpResponse("Event index")
 
 
 class AddEventOrganizer(View):
