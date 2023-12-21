@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
+from .models import OrganizerUser, AttenderUser
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
-from .forms import AttenderSignupForm, OrganizerSignupForm, LoginForm
+from .forms import AttenderSignupForm, OrganizerSignupForm
 
 
 class OrganizerSignup(View):
@@ -13,11 +15,22 @@ class OrganizerSignup(View):
     def post(self, req):
         form = OrganizerSignupForm(req.POST)
         if form.is_valid():
-            form.save()
-            print(f"signup success\n{form.cleaned_data}")
-            return doLogin(req, form)
-        
-        print(f"signup failed\n{form}")
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
+            user = User.objects.create_user(
+                username=username,
+                email=form.cleaned_data["email"],
+                password=password,
+                first_name=form.cleaned_data["firstName"],
+                last_name=form.cleaned_data["lastName"]
+            )
+            user.save()
+            user = User.objects.latest("id")
+            organizerUser = OrganizerUser(user=user, phone=form.cleaned_data["phone"])
+            organizerUser.save()
+            print(f"signup success: {form.cleaned_data}")
+            return doLogin(req, username, password)
+        print(f"signup failed: {form.cleaned_data}")
         return render(req, "auth/organizer_signup.html", {"form": form, "status": "failed"})
 
 
@@ -28,36 +41,43 @@ class AttenderSignup(View):
 
     def post(self, req):
         form = AttenderSignupForm(req.POST)
-        if form.is_valid():
-            form.save()
-            print(f"signup success\n{form.cleaned_data}")
-            return doLogin(req, form)
-        print(f"signup failed\n{form}")
+        if form.is_valid(): 
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
+            user = User.objects.create_user(
+                username=username,
+                email=form.cleaned_data["email"],
+                password=password,
+                first_name=form.cleaned_data["firstName"],
+                last_name=form.cleaned_data["lastName"]
+                )
+            user.save()
+            user = User.objects.latest("id")
+            attenderUser = AttenderUser(user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])
+            attenderUser.save()
+            print(f"signup success: {form.cleaned_data}")
+            return doLogin(req, username, password)
+        print(f"signup failed: {form.cleaned_data}")
         return render(req, "auth/attender_signup.html", {"form": form, "status": "failed"})
 
 
 class Login(View):
     def get(self, req):
-        form = LoginForm()
-        return render(req, "auth/login.html", {"form": form})
+        return render(req, "auth/login.html", {})
 
     def post(self, req):
-        form = LoginForm(req.POST)
-        if form.is_valid():
-            return doLogin(req, form)
+        return doLogin(req)
 
 
 
-def doLogin(req, form):
-    username = form.cleaned_data["username"]
-    password = form.cleaned_data["password"]
+def doLogin(req, username, password):
     authenticatedUser = authenticate(username=username, password=password)
     if authenticatedUser:
         login(req, authenticatedUser)
-        print(f"login success\n{form.cleaned_data["username"]}")
+        print(f"login success: {username}")
         return redirect("event_index")
     else:
-        return render(req, "auth/login.html", {"form": form, "status": "failed"})
+        return render(req, "auth/login.html", {"status": "failed"})
 
 class Logout(View):
     def get(self, req):
