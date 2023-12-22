@@ -3,6 +3,8 @@ from authorize.models import OrganizerUser, AttenderUser
 # Create your models here.
 
 class Event(models.Model):
+    title           = models.TextField(max_length=100)
+    description     = models.TextField()
     location        = models.TextField(max_length=200)
     price           = models.DecimalField(decimal_places=2, max_digits=20)
     start_date      = models.DateTimeField()
@@ -13,6 +15,7 @@ class Event(models.Model):
 
 
 class Discount(models.Model):
+    title           = models.TextField(max_length=100)
     code           = models.TextField(max_length=10)
     percentage     = models.DecimalField(decimal_places=2, max_digits=2)
     valid_until    = models.DateTimeField()

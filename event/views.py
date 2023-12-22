@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.views import View
+from .models import Event, Discount
 
 def index(req):
     return HttpResponse("Event index")
@@ -10,6 +11,9 @@ class AddEventOrganizer(View):
         pass
     def post(self, req):
         pass
+
+def organizerEvents(req, orgId):
+    pass
 
 class EditEventOrganizer(View):
     def get(self, req):
@@ -35,7 +39,8 @@ def applyDiscount(req, eid):
     pass
 
 def viewEvent(req, eid):
-    pass
+    event = Event.objects.get(pk=eid)
+    return render(req, "event/event_details.html", {"event": event})
 
 def viewAllEvents(req):
     pass

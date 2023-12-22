@@ -9,6 +9,8 @@ from .forms import AttenderSignupForm, OrganizerSignupForm
 
 class OrganizerSignup(View):
     def get(self, req):
+        if req.user.is_authenticated:
+            return redirect("event_index")
         form = OrganizerSignupForm()
         return render(req, "auth/organizer_signup.html", {"form": form})
 
@@ -36,6 +38,8 @@ class OrganizerSignup(View):
 
 class AttenderSignup(View):
     def get(self, req):
+        if req.user.is_authenticated:
+            return redirect("event_index")
         form = AttenderSignupForm()
         return render(req, "auth/attender_signup.html", {"form": form})
 
@@ -90,4 +94,4 @@ class Logout(View):
 
     def post(self, req):
         logout(req)
-        return HttpResponse("Logout successful!")
+        return redirect("auth_login")
