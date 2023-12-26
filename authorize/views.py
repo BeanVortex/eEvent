@@ -67,6 +67,8 @@ class AttenderSignup(View):
 
 class Login(View):
     def get(self, req):
+        if req.user.is_authenticated:
+            return redirect("event_index")
         return render(req, "auth/login.html", {})
 
     def post(self, req):
