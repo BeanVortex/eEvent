@@ -1,0 +1,48 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events List</title>
+    <!-- Include your Tailwind CSS file -->
+    {% tailwind_css %}
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="bg-gray-50 dark:bg-gray-900 text-white p-4">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold">Events List</h1>
+        </div>
+    </div>
+
+    <div class="container mx-auto mt-8">
+        <!-- Check if there are events to display -->
+        {% if events %}
+            <ul>
+                <!-- Loop through each event and display its details -->
+                {% for event in events %}
+                <a href="/events/{{event.id}}/">
+                    <li class="mb-8 p-6 bg-white shadow-md rounded-lg">
+                        <h2 class="text-2xl font-bold mb-2">{{ event.title }}</h2>
+                        <p class="text-gray-600">{{ event.description }}</p>
+                        <p class="text-gray-700 mt-2">Location: {{ event.location }}</p>
+                        <p class="text-gray-700">Price: ${{ event.price }}</p>
+                        <p class="text-gray-700">Starts on: {{ event.starts_on|date:"F d, Y H:i A" }}</p>
+                        <p class="text-gray-700">Capacity: {{ event.capacity }}</p>
+                        <a href="/events/organizer/{{event.organizer_user_id}}/"
+                        class="text-blue-500 hover:underline focus:text-green-500">
+                            Organizer
+                        </a>
+                    </li>
+                </a>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-600">No events available.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

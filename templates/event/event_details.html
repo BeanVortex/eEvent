@@ -11,8 +11,8 @@
   <body>
     <div class="container mx-auto px-4 py-8">
       <div class="card bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="card-header bg-gray-100 p-4">
-          <h2 class="text-xl font-bold">Event Details</h2>
+        <div class="card-header bg-gray-50 dark:bg-gray-900 p-4">
+          <h2 class="text-xl font-bold text-white">Event Details</h2>
         </div>
         <div class="card-body p-4 grid grid-cols-2 gap-4">
           <div class="col-span-1">
@@ -48,7 +48,7 @@
           <div class="col-span-1">
             <p class="text-sm text-gray-500">Organizer</p>
             <p class="text-lg font-semibold">
-              <a href='/organizer/{{event.organizer_user.user.id}}/events'>
+              <a href='/events/organizer/{{event.organizer_user.id}}'>
                 {{ event.organizer_user.user.first_name }}
               </a>
             </p>
@@ -61,7 +61,7 @@
             <li>{{ attender.user.first_name }}</li>
             {% endfor %}
           </ul>
-        </div>
+        </div>     
       </div>
     </div>
   </body>

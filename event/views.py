@@ -3,7 +3,7 @@ from django.views import View
 
 from authorize.models import OrganizerUser
 from .models import Event, Discount
-from .forms import NewEventForm
+from .forms import DiscountForm, NewEventForm
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
@@ -38,16 +38,42 @@ class AddEventOrganizer(View):
             event.save()
         return redirect("event_index")
 
-def organizerEvents(req):
-    pass
+def organizerEvents(req, oid):
+    events = Event.objects.all().values().filter(organizer_user=oid)
+    return render(req, "event/event_list.html", {"events": events})
 
 
 def viewEventAsOrganizer(req, orgId, eid):
     pass
 
 
-def addDiscount(req, eid):
-    pass
+class AddDiscount(View):
+    def get(self, req):
+        form = DiscountForm()
+        return render(req, 'event/discount_form.html', {'form': form})
+    
+    def post(self, req):
+        form = DiscountForm(req.POST)
+        try:
+            if form.is_valid():
+                title = form.cleaned_data["title"]
+                code = form.cleaned_data["code"]
+                percentage = form.cleaned_data["percentage"]
+                rate_limit = form.cleaned_data["rate_limit"]
+                end_date = form.cleaned_data["end_date"]
+                end_time = form.cleaned_data["end_time"]
+                valid_until = datetime.combine(end_date, end_time)
+                aware_datetime = timezone.make_aware(valid_until)
+                eventId = form.cleaned_data["event"]
+                event = Event.objects.get(id=eventId)
+                discount = Discount(title=title, code=code, percentage=percentage, valid_until=aware_datetime,
+                                    rate_limit=rate_limit, event=event)
+                discount.save()
+                return render(req, 'event/discount_form.html', {'form': form, "status": "success"})
+            else:
+                return render(req, 'event/discount_form.html', {'form': form, "status": "fail"})
+        except Exception as e:
+            return render(req, 'event/discount_form.html', {'form': form, "status": "fail", "message": str(e)})
 
 
 def deleteDiscount(req, did):
@@ -92,4 +118,5 @@ def searchByTitle(req):
 
 
 def viewAllEvents(req):
-    pass
+    events = Event.objects.all().values()
+    return render(req, "event/event_list.html", {"events": events})
