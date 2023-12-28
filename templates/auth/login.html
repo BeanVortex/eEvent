@@ -1,30 +1,20 @@
+{% extends 'menu.html' %} 
 {% load static tailwind_tags %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    {% tailwind_css %}
-    <link rel="icon" href="{% static 'logo.svg' %}">
-    <style>
-        label{
-            color: white
-        }
-    </style>
-</head>
-<body>
+{% block head %}
+<title>Login</title>
+<link rel="icon" href="{% static 'logo.svg' %}" />
+<style>
+    label{
+        color: white
+    }
+</style>
+{% endblock %} 
 
-<!-- <form action="" method="post">
-    <form method="post" action="">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Login"/>
-    </form>
-</form> -->
+{% block main %}
 
 <section class="bg-gray-50 dark:bg-gray-900">
     <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+        <a href="{% url "index" %}" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
             <img class="w-8 h-8 mr-2" src="{% static 'logo.svg' %}" alt="logo">
             eEvent    
         </a>
@@ -59,5 +49,4 @@
     </div>
   </section>
 
-</body>
-</html>
+{% endblock %} 

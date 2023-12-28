@@ -3,9 +3,9 @@ from . import views
 urlpatterns = [
     path("", views.viewAllEvents, name="event_index"),
     
-    path("organizer/add/", views.AddEventOrganizer.as_view()),
+    path("organizer/add/", views.AddEventOrganizer.as_view(), name="organizer_add_event"),
     path("organizer/<int:oid>/", views.organizerEvents),
-    path("organizer/discount/add/", views.AddDiscount.as_view()),
+    path("organizer/discount/add/", views.AddDiscount.as_view(), name="organizer_add_discount"),
     path("organizer/discount/delete/<int:did>/", views.deleteDiscount),
     path("organizer/edit/<int:eid>/", views.EditEventOrganizer.as_view()),
     path("organizer/delete/<int:eid>/", views.deleteEventOrganizer),

@@ -1,68 +1,70 @@
+{% extends 'menu.html' %}
 {% load static tailwind_tags %}
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{event.title}}</title>
-    {% tailwind_css %}
-  </head>
-  <body>
-    <div class="container mx-auto px-4 py-8">
-      <div class="card bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="card-header bg-gray-50 dark:bg-gray-900 p-4">
-          <h2 class="text-xl font-bold text-white">Event Details</h2>
-        </div>
-        <div class="card-body p-4 grid grid-cols-2 gap-4">
-          <div class="col-span-1">
-            <p class="text-lg font-semibold">{{ event.title }}</p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-lg font-semibold">{{ event.description }}</p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Location</p>
-            <p class="text-lg font-semibold">{{ event.location }}</p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Price</p>
-            <p class="text-lg font-semibold">${{ event.price }}</p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Start Date</p>
-            <p class="text-lg font-semibold">
-              {{ event.start_date | date:"M d, Y h:i A" }}
-            </p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Valid Until</p>
-            <p class="text-lg font-semibold">
-              {{ event.valid_until | date:"M d, Y h:i A" }}
-            </p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Capacity</p>
-            <p class="text-lg font-semibold">{{ event.capacity }}</p>
-          </div>
-          <div class="col-span-1">
-            <p class="text-sm text-gray-500">Organizer</p>
-            <p class="text-lg font-semibold">
-              <a href='/events/organizer/{{event.organizer_user.id}}'>
-                {{ event.organizer_user.user.first_name }}
-              </a>
-            </p>
-          </div>
-        </div>
-        <div class="card-footer bg-gray-100 p-4">
-          <h3 class="text-lg font-bold">Attenders</h3>
-          <ul class="list-disc list-inside pl-4">
-            {% for attender in event.attender_users.all %}
-            <li>{{ attender.user.first_name }}</li>
-            {% endfor %}
-          </ul>
-        </div>     
+{% block head %}
+  <title>{{event.title}}</title>
+  <link rel="icon" href="{% static 'logo.svg' %}">
+{% endblock %}
+
+{% block main %}
+
+<body class="bg-gray-100">
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="card bg-white shadow-lg rounded-lg overflow-hidden">
+      <div class="card-header bg-gray-50 dark:bg-gray-900 p-4">
+        <h2 class="text-xl font-bold text-white">Event Details</h2>
       </div>
+      <div class="card-body p-4 grid grid-cols-2 gap-4">
+        <div class="col-span-1">
+          <p class="text-lg font-semibold">{{ event.title }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-lg font-semibold">{{ event.description }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Location</p>
+          <p class="text-lg font-semibold">{{ event.location }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Price</p>
+          <p class="text-lg font-semibold">${{ event.price }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Start Date</p>
+          <p class="text-lg font-semibold">
+            {{ event.start_date | date:"M d, Y h:i A" }}
+          </p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Valid Until</p>
+          <p class="text-lg font-semibold">
+            {{ event.valid_until | date:"M d, Y h:i A" }}
+          </p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Capacity</p>
+          <p class="text-lg font-semibold">{{ event.capacity }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Organizer</p>
+          <p class="text-lg font-semibold">
+            <a href='/events/organizer/{{event.organizer_user.id}}'>
+              {{ event.organizer_user.user.first_name }}
+            </a>
+          </p>
+        </div>
+      </div>
+      <div class="card-footer bg-gray-100 p-4">
+        <h3 class="text-lg font-bold">Attenders</h3>
+        <ul class="list-disc list-inside pl-4">
+          {% for attender in event.attender_users.all %}
+          <li>{{ attender.user.first_name }}</li>
+          {% endfor %}
+        </ul>
+      </div>     
     </div>
-  </body>
-</html>
+  </div>
+</body>
+
+{% endblock %} 

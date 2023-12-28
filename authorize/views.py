@@ -68,7 +68,7 @@ class AttenderSignup(View):
 class Login(View):
     def get(self, req):
         if req.user.is_authenticated:
-            return redirect("event_index")
+            return redirect("index")
         return render(req, "auth/login.html", {})
 
     def post(self, req):
@@ -83,7 +83,7 @@ def doLogin(req, username, password):
     if authenticatedUser:
         login(req, authenticatedUser)
         print(f"login success: {username}")
-        return redirect("event_index")
+        return redirect("index")
     else:
         return render(req, "auth/login.html", {"status": "failed"})
 

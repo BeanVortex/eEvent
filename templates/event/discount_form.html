@@ -1,49 +1,45 @@
+{% extends 'menu.html' %} 
 {% load static tailwind_tags %}
+{% block head %}
+<title>New Discount</title>
+<link rel="icon" href="{% static 'logo.svg' %}" />
+<style>
+  p {
+    margin-top: 8px;
+  }
+</style>
+{% endblock %} 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Discount</title>
-    {% tailwind_css %}
-    <style>
-        p{
-            margin-top: 8px
-        }
-    </style>
-</head>
-<body class="bg-gray-100 font-sans">
+{% block main %}
 
+<div class="container mx-auto px-4 py-8 flex items-center justify-center">
+  <div
+    class="card bg-white items-center shadow-lg w-1/2 rounded-lg overflow-hidden p-2"
+  >
+    <h1 class="text-2xl font-bold mb-4">Create Discount</h1>
 
-    <div class="container mx-auto px-4 py-8  flex items-center justify-center">
-        <div class="card bg-white items-center shadow-lg w-1/2 rounded-lg overflow-hidden p-2">
-            <h1 class="text-2xl font-bold mb-4">Create Discount</h1>
+    <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md">
+      {% csrf_token %} {{ form.as_p }}
 
-            <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md">
-                {% csrf_token %}
-                {{ form.as_p }}
-        
-                <div class="flex items-center justify-end mt-3">
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue">
-                        Create Discount
-                    </button>
-                </div>
-            </form>
-            {% if status %}
-                {% if status == "success" %}
-                <div class="bg-green-500 text-white p-4 mb-4 rounded-md mt-4">
-                  <h2 class="text-2xl font-bold">Successfully created Discount!</h2>
-                </div>
-                {% else %}  
-                <div class="bg-red-500 text-white p-4 mb-4 rounded-md mt-4" >
-                  <h2 class="text-2xl font-bold" >Discount creation failed</h2>
-                  <p>{{message}}</p>
-                </div>
-                {% endif %}
-            {% endif %}
-        </div>
+      <div class="flex items-center justify-end mt-3">
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue"
+        >
+          Create Discount
+        </button>
+      </div>
+    </form>
+    {% if status %} {% if status == "success" %}
+    <div class="bg-green-500 text-white p-4 mb-4 rounded-md mt-4">
+      <h2 class="text-2xl font-bold">Successfully created Discount!</h2>
     </div>
-
-</body>
-</html>
+    {% else %}
+    <div class="bg-red-500 text-white p-4 mb-4 rounded-md mt-4">
+      <h2 class="text-2xl font-bold">Discount creation failed</h2>
+      <p>{{message}}</p>
+    </div>
+    {% endif %} {% endif %}
+  </div>
+</div>
+{% endblock %}
