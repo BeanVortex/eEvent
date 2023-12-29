@@ -55,14 +55,43 @@
           </p>
         </div>
       </div>
-      <div class="card-footer bg-gray-100 p-4">
-        <h3 class="text-lg font-bold">Attenders</h3>
-        <ul class="list-disc list-inside pl-4">
-          {% for attender in event.attender_users.all %}
-          <li>{{ attender.user.first_name }}</li>
-          {% endfor %}
-        </ul>
-      </div>     
+      {% for group in request.user.groups.all %}
+        {% if group.name == "AUTH_ORGANIZER" and request.user.id == event.organizer_user.user_id %}
+          <div class="card-footer bg-gray-100 p-4">
+            <h3 class="text-lg font-bold">Attenders</h3>
+            <ul class="list-disc list-inside pl-4">
+              {% for attender in event.attender_users.all %}
+              <li>{{ attender.user.first_name }}</li>
+              {% endfor %}
+            </ul>
+          </div>     
+        {% endif %}
+        {% if group.name == "AUTH_ATTENDER" %}
+          <form action="" method="POST" class="p-2">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4
+            focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 
+            py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Attend</button>
+          </form>
+        {% endif %}
+      {% endfor %}
+
+      {% if status %}
+        <div class="p-2">
+          {% if status == "success" %}
+            <div class="bg-green-500 text-white p-4 rounded-md">
+              <h3 class="text-2xl font-bold">Successfully attended in this Event!</h3>
+            </div>
+          {% endif %} 
+          {% if status == "fail" %}
+            <div class="bg-red-500 text-white p-4 rounded-md">
+              <h3 class="text-2xl font-bold">Attendence failed</h3>
+              <p>{{message}}</p>
+            </div>
+          {% endif %} 
+        </div>
+      {% endif %}
+
     </div>
   </div>
 </body>

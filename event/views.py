@@ -17,7 +17,7 @@ def index(req):
 
 class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     login_url = "/auth/login"
-    permission_required="event.add_event"
+    permission_required = "event.add_event"
 
     def get(self, req):
         # todo check if user is organizer
@@ -55,9 +55,11 @@ def viewOrganizerEventsById(req, oid):
     events = Event.objects.all().values().filter(organizer_user=oid)
     return render(req, "event/event_list.html", {"events": events})
 
-class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin ,View):
-    login_url="/auth/login/"
-    permission_required="event.add_discount"
+
+class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login/"
+    permission_required = "event.add_discount"
+
     def get(self, req):
         form = DiscountForm()
         return render(req, 'event/discount_form.html', {'form': form})
@@ -109,6 +111,7 @@ def attenderEvents(req):
     events = attender_user.events.all()
     return render(req, "event/event_list.html", {"events": events})
 
+
 def addEventAttender(req, eid):
     # todo get user data from authentication
     pass
@@ -126,6 +129,17 @@ def applyDiscount(req, eid):
 
 def viewEvent(req, eid):
     event = Event.objects.get(pk=eid)
+    if req.method == "POST" and req.user.is_authenticated:
+        try:
+            attender_user = get_object_or_404(
+                AttenderUser, user_id=req.user.id)
+            if attender_user.events.filter(id=eid).exists():
+                raise Exception("You have already attended in this event")
+            attender_user.events.add(event)
+        except Exception as e:
+            return render(req, "event/event_details.html", {"event": event, "status": "fail", "message": str(e)})
+
+        return render(req, "event/event_details.html", {"event": event, "status": "success"})
     return render(req, "event/event_details.html", {"event": event})
 
 
