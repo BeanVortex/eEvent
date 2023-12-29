@@ -11,23 +11,17 @@ from datetime import datetime
 from django.utils import timezone
 
 
-def index(req):
-    return HttpResponse("Event index")
-
-
 class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     login_url = "/auth/login"
     permission_required = "event.add_event"
 
     def get(self, req):
-        # todo check if user is organizer
         form = NewEventForm()
         return render(req, "event/event_new.html", {"form": form})
 
     def post(self, req):
         form = NewEventForm(req.POST)
         if form.is_valid():
-            # todo check if user is organizer
             title = form.cleaned_data["title"]
             description = form.cleaned_data["description"]
             location = form.cleaned_data["location"]
@@ -45,15 +39,17 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
         return redirect("event_index")
 
 
+@login_required(login_url="/auth/login")
 def organizerEvents(req):
-    organizer_user = get_object_or_404(OrganizerUser, user_id=req.user.id)
-    events = Event.objects.all().values().filter(organizer_user=organizer_user.id)
-    return render(req, "event/event_list.html", {"events": events})
+    organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
+    events = Event.objects.filter(organizer_user=organizer)
+    return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.user.first_name + " " + organizer.user.last_name})
 
 
 def viewOrganizerEventsById(req, oid):
-    events = Event.objects.all().values().filter(organizer_user=oid)
-    return render(req, "event/event_list.html", {"events": events})
+    organizer = OrganizerUser.objects.get(id=oid)
+    events = Event.objects.filter(organizer_user=organizer)
+    return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.user.first_name + " " + organizer.user.last_name})
 
 
 class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -88,43 +84,11 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
             return render(req, 'event/discount_form.html', {'form': form, "status": "fail", "message": str(e)})
 
 
-def deleteDiscount(req, did):
-    pass
-
-
-class EditEventOrganizer(View):
-    def get(self, req):
-        pass
-
-    def post(self, req):
-        pass
-
-
-def deleteEventOrganizer(req, eid):
-    # todo get user data from authentication
-    pass
-
-
 @login_required(login_url="/auth/login/")
 def attenderEvents(req):
     attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
     events = attender_user.events.all()
     return render(req, "event/event_list.html", {"events": events})
-
-
-def addEventAttender(req, eid):
-    # todo get user data from authentication
-    pass
-
-
-def deleteEventFromAttender(req, eid):
-    # todo get user data from authentication
-    pass
-
-
-def applyDiscount(req, eid):
-    # todo get discount data from req
-    pass
 
 
 def viewEvent(req, eid):
@@ -143,10 +107,37 @@ def viewEvent(req, eid):
     return render(req, "event/event_details.html", {"event": event})
 
 
-def searchByTitle(req):
+def viewAllEvents(req):
+    events = Event.objects.all()
+    return render(req, "event/event_list.html", {"events": events})
+
+
+@login_required(login_url="/auth/login")
+@permission_required(perm="event.delete_discount")
+def deleteDiscount(req, did):
     pass
 
 
-def viewAllEvents(req):
-    events = Event.objects.all().values()
-    return render(req, "event/event_list.html", {"events": events})
+class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login/"
+    permission_required = "event.edit_event"
+
+    def get(self, req):
+        pass
+
+    def post(self, req):
+        pass
+
+
+def deleteEventFromAttender(req, eid):
+    # todo get user data from authentication
+    pass
+
+
+def applyDiscount(req, eid):
+    # todo get discount data from req
+    pass
+
+
+def searchByTitle(req):
+    pass
