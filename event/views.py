@@ -1,23 +1,28 @@
-from django.shortcuts import redirect, render, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render, HttpResponse
 from django.views import View
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
-from authorize.models import OrganizerUser
+from authorize.models import OrganizerUser, AttenderUser
 from .models import Event, Discount
 from .forms import DiscountForm, NewEventForm
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
 
+
 def index(req):
     return HttpResponse("Event index")
 
 
-class AddEventOrganizer(View):
+class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login"
+    permission_required="event.add_event"
+
     def get(self, req):
         # todo check if user is organizer
         form = NewEventForm()
         return render(req, "event/event_new.html", {"form": form})
-    
 
     def post(self, req):
         form = NewEventForm(req.POST)
@@ -25,7 +30,7 @@ class AddEventOrganizer(View):
             # todo check if user is organizer
             title = form.cleaned_data["title"]
             description = form.cleaned_data["description"]
-            location= form.cleaned_data["location"]
+            location = form.cleaned_data["location"]
             price = form.cleaned_data["price"]
             start_date = form.cleaned_data["start_date"]
             start_time = form.cleaned_data["start_time"]
@@ -34,24 +39,29 @@ class AddEventOrganizer(View):
             capacity = form.cleaned_data["capacity"]
             orgId = req.user.id
             orgUser = OrganizerUser.objects.get(user_id=orgId)
-            event = Event(title=title, description=description, location=location, price=price, starts_on=aware_datetime, capacity=capacity, organizer_user=orgUser)
+            event = Event(title=title, description=description, location=location, price=price,
+                          starts_on=aware_datetime, capacity=capacity, organizer_user=orgUser)
             event.save()
         return redirect("event_index")
 
-def organizerEvents(req, oid):
-    events = Event.objects.all().values().filter(organizer_user=oid)
+
+def organizerEvents(req):
+    organizer_user = get_object_or_404(OrganizerUser, user_id=req.user.id)
+    events = Event.objects.all().values().filter(organizer_user=organizer_user.id)
     return render(req, "event/event_list.html", {"events": events})
 
 
-def viewEventAsOrganizer(req, orgId, eid):
-    pass
+def viewOrganizerEventsById(req, oid):
+    events = Event.objects.all().values().filter(organizer_user=oid)
+    return render(req, "event/event_list.html", {"events": events})
 
-
-class AddDiscount(View):
+class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin ,View):
+    login_url="/auth/login/"
+    permission_required="event.add_discount"
     def get(self, req):
         form = DiscountForm()
         return render(req, 'event/discount_form.html', {'form': form})
-    
+
     def post(self, req):
         form = DiscountForm(req.POST)
         try:
@@ -92,6 +102,12 @@ def deleteEventOrganizer(req, eid):
     # todo get user data from authentication
     pass
 
+
+@login_required(login_url="/auth/login/")
+def attenderEvents(req):
+    attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
+    events = attender_user.events.all()
+    return render(req, "event/event_list.html", {"events": events})
 
 def addEventAttender(req, eid):
     # todo get user data from authentication

@@ -10,7 +10,7 @@ class Event(models.Model):
     starts_on       = models.DateTimeField()
     capacity        = models.IntegerField()
     organizer_user  = models.ForeignKey(OrganizerUser, on_delete=models.CASCADE)
-    attender_users  = models.ManyToManyField(AttenderUser, blank=True)
+    attender_users  = models.ManyToManyField(AttenderUser, related_name="events", blank=True)
     
     def __str__(self):
         return self.title

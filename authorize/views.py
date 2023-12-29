@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from .forms import AttenderSignupForm, OrganizerSignupForm
+from django.contrib.auth.models import Group
 
 
 class OrganizerSignup(View):
@@ -26,6 +27,8 @@ class OrganizerSignup(View):
                 first_name=form.cleaned_data["firstName"],
                 last_name=form.cleaned_data["lastName"]
             )
+            attenderGroup = Group.objects.get(name='AUTH_ORGANIZER')
+            user.groups.add(attenderGroup)
             user.save()
             user = User.objects.latest("id")
             organizerUser = OrganizerUser(user=user, phone=form.cleaned_data["phone"])
@@ -55,6 +58,8 @@ class AttenderSignup(View):
                 first_name=form.cleaned_data["firstName"],
                 last_name=form.cleaned_data["lastName"]
                 )
+            attenderGroup = Group.objects.get(name='AUTH_ATTENDER')
+            user.groups.add(attenderGroup)
             user.save()
             user = User.objects.latest("id")
             attenderUser = AttenderUser(user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])

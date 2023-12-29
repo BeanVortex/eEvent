@@ -25,11 +25,25 @@
                     <a href="javascript:void (0)" class="text-right text-white text-4xl" onclick="toggleMenu()">× </a>
                 </li>
                 <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "index" %}">Home</a></li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_login" %}">Login/Signup</a></li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_logout" %}">Logout</a></li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_event" %}">Create Event</a></li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_discount" %}">Create Discount</a></li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/organizer/{{session}}/">Your Events</a></li>
+                {% if not user.is_authenticated %}
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_login" %}">Login/Signup</a></li>
+                {% else %}
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_logout" %}">Logout</a></li>
+                {% endif %}
+                {% if perms.event.add_event %}
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_event" %}">Create Event</a></li>
+                {% endif %}
+                {% if perms.event.add_discount %}                
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_discount" %}">Create Discount</a></li>
+                {% endif %}
+                {% for group in request.user.groups.all  %}
+                    {% if group.name == "AUTH_ORGANIZER" %}
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/organizer/">Your Events</a></li>
+                    {% endif %}
+                    {% if group.name == "AUTH_ATTENDER" %}
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/attender/">Your Events</a></li>
+                    {% endif %}  
+                {% endfor %}
             </ul>
             <div class="flex items-center md:hidden">
                 <button class="text-white text-4xl font-bold opacity-70 hover:opacity-100 duration-300" onclick="toggleMenu()"> ☰ </button>
