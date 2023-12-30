@@ -10,6 +10,8 @@ from datetime import datetime
 from django.utils import timezone
 import logging
 
+log = logging.getLogger(__name__)
+
 class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     login_url = "/auth/login"
     permission_required = "event.add_event"
@@ -35,7 +37,7 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
             event = Event(title=title, description=description, location=location, price=price,
                           starts_on=aware_datetime, capacity=capacity, organizer_user=orgUser)
             event.save()
-            logging.info(f"saved event: {event}")
+            log.info(f"Saved event: {event.id}")
         return redirect("event_index")
 
 
@@ -56,7 +58,7 @@ def deleteOrganizerEvent(req, eid):
         events = Event.objects.all()
         return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.getDisplayName()})
     except Exception as e:
-        logging.error(str(e))
+        log.error(str(e))
         return redirect("index")
 
 
@@ -82,10 +84,10 @@ def deleteOrganizerDiscount(req, did):
         discount = Discount.objects.get(organizer_user=organizer, id=did)
         discount.delete()
         discounts = Discount.objects.filter(organizer_user=organizer)
-        logging.info(f"Deleted discount: {discount}")
+        log.info(f"Deleted discount: {discount.id}")
         return render(req, "event/discount_list.html", {"discounts": discounts, "organizer_name": organizer.getDisplayName()})
     except Exception as e:
-        logging.error(str(e))
+        log.error(str(e))
         return redirect("index")
     
 
@@ -126,9 +128,9 @@ class EditDiscountOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                     raise Exception(f"You can't decrease rate limit, rate/rate limit !~ {discount.rate}/{rate_limit} ")
                 discount.rate_limit = rate_limit
                 discount.save()
-                logging.info(f"Discount updated: {discount}")
+                log.info(f"Discount updated: {discount.id}")
         except Exception as e:
-            logging.error(str(e))
+            log.error(str(e))
             return render(req, 'event/discount_save.html', {'form': form, "status": "fail", "message": str(e)})
         return redirect("organizer_discounts")
 
@@ -161,13 +163,13 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
                 discount = Discount(title=title, code=code, percentage=percentage, valid_until=aware_datetime,
                                     rate_limit=rate_limit, organizer_user=organizer_user, event=event)
                 discount.save()
-                logging.info(f"Discount saved: {discount}")
+                log.info(f"Discount saved: {discount.id}")
                 return redirect("organizer_discounts")
             else:
-                logging.warning(f"Form is invalid: {discount}")
+                log.warning(f"Form is invalid: {discount.id}")
                 return render(req, 'event/discount_save.html', {'form': form, "status": "fail", "message": "sent data is invalid"})
         except Exception as e:
-            logging.warning(str(e))
+            log.warning(str(e))
             return render(req, 'event/discount_save.html', {'form': form, "status": "fail", "message": str(e)})
 
 
@@ -188,7 +190,7 @@ class AttenderEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
             AttenderUser, user_id=req.user.id)
         attender_user.events.remove(event)
         events = attender_user.events.all()
-        logging.info(f"Removed event {event.title} from attender user {attender_user.id}")
+        log.info(f"Removed event {event.title} from attender user {attender_user.id}")
         return render(req, "event/event_list.html", {"events": events, "user_id": req.user.id})
 
 
@@ -226,26 +228,26 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
                     new_price = event.price - percentage_val
                     discount.rate = discount.rate + 1
                     discount.save()
-                    logging.info(f"Applying discount {discount.id} on event {event.id} with user {attender_user.id}")
+                    log.info(f"Applying discount {discount.id} on event {event.id} with user {attender_user.id}")
                 else:
                     message = "Code is invalid for this event"
 
             else:
                 attendance = Attendance.objects.filter(
                     attender_user_id=attender_user.id, event_id=event.id)
-                logging.info(f"User {attender_user.id} attending in event {event.id} without discount code")
+                log.info(f"User {attender_user.id} attending in event {event.id} without discount code")
                 if attendance:
                     raise Exception("You have already attended in this event")
             attendance = Attendance(
                 paid=True, attender_user_id=attender_user.id, event_id=event.id)
             attendance.save()
-            logging.info(f"User {attender_user.id} attended in event {event.id}")
+            log.info(f"User {attender_user.id} attended in event {event.id}")
             return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id, "status": "success", "new_price": new_price})
 
         except Exception as e:
             message = str(e)
 
-        logging.error(message)
+        log.error(message)
         return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id, "status": "fail", "message": message})
 
 
@@ -258,10 +260,10 @@ def viewEvent(req, eid):
             if attender_user.events.filter(id=eid).exists():
                 raise Exception("You have already attended in this event")
             attender_user.events.add(event)
-            logging.info(f"Attender user {attender_user.id} successfully attended in {event.id}")
+            log.info(f"Attender user {attender_user.id} successfully attended in {event.id}")
             return render(req, "event/event_details.html", {"event": event, "status": "success"})
         except Exception as e:
-            logging.error(str(e))
+            log.error(str(e))
             return render(req, "event/event_details.html", {"event": event, "status": "fail", "message": str(e)})
 
     return render(req, "event/event_details.html", {"event": event})
@@ -303,7 +305,7 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
             event.starts_on = timezone.make_aware(starts_on)
             event.capacity = form.cleaned_data["capacity"]
             event.save()
-            logging.info(f"Successfully updated event {event.id}")
+            log.info(f"Successfully updated event {event.id}")
         return redirect("event_index")
 
 

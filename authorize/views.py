@@ -7,6 +7,7 @@ from .forms import AttenderSignupForm, OrganizerSignupForm
 from django.contrib.auth.models import Group
 import logging
 
+log = logging.getLogger(__name__)
 
 class OrganizerSignup(View):
     def get(self, req):
@@ -36,11 +37,11 @@ class OrganizerSignup(View):
                 organizerUser = OrganizerUser(
                     user=user, phone=form.cleaned_data["phone"])
                 organizerUser.save()
-                logging.info(f"Organizer signup success: {organizerUser.id}")
+                log.info(f"Organizer signup success: {organizerUser.id}")
                 return doLogin(req, username, password)
             except Exception as e:
                 message = str(e)
-            logging.error(f"Organizer signup failed: {message}")
+            log.error(f"Organizer signup failed: {message}")
             return render(req, "auth/organizer_signup.html", {"form": form, "status": "fail", "message": message})
 
 
@@ -72,11 +73,11 @@ class AttenderSignup(View):
                 attenderUser = AttenderUser(
                     user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])
                 attenderUser.save()
-                logging.info(f"Attender signup success: {attenderUser.id}")
+                log.info(f"Attender signup success: {attenderUser.id}")
                 return doLogin(req, username, password)
             except Exception as e:
                 message = str(e)
-        logging.error(f"Attender signup failed: {message}")
+        log.error(f"Attender signup failed: {message}")
         return render(req, "auth/attender_signup.html", {"form": form, "status": "fail", "message": message})
 
 
@@ -99,10 +100,10 @@ def doLogin(req, username, password):
             raise Exception(
                 "Failed to authenticate, maybe wrong username or password")
         login(req, authenticatedUser)
-        logging.info(f"Login success: {username}")
+        log.info(f"Login success: {username}")
         return redirect("index")
     except Exception as e:
-        logging.info(f"Login failed for {username}: {str(e)}")
+        log.info(f"Login failed for {username}: {str(e)}")
         return render(req, "auth/login.html", {"status": "fail", "message": str(e)})
 
 
@@ -115,5 +116,5 @@ class Logout(View):
 
     def post(self, req):
         logout(req)
-        logging.info("Logout success")
+        log.info("Logout success")
         return redirect("auth_login")
