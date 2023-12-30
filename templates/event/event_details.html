@@ -50,7 +50,7 @@
           <p class="text-sm text-gray-500">Organizer</p>
           <p class="text-lg font-semibold">
             <a href='/events/organizer/{{event.organizer_user.id}}'>
-              {{ event.organizer_user.user.first_name }}
+              {{ event.organizer_user.getDisplayName }}
             </a>
           </p>
         </div>

@@ -38,7 +38,8 @@
                 {% endif %}
                 {% for group in request.user.groups.all  %}
                     {% if group.name == "AUTH_ORGANIZER" %}
-                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/organizer/">Your Events</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_events" %}">Your Events</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_discounts" %}">Your Discounts</a></li>
                     {% endif %}
                     {% if group.name == "AUTH_ATTENDER" %}
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/attender/">Your Events</a></li>

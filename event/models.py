@@ -22,6 +22,7 @@ class Event(models.Model):
         return timezone.now() < self.starts_on
 
 
+
 class Attendance(models.Model):
     attender_user = models.ForeignKey(AttenderUser, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
@@ -35,5 +36,7 @@ class Discount(models.Model):
     rate_limit = models.IntegerField()
     rate = models.IntegerField(default=0)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    organizer_user = models.ForeignKey(OrganizerUser, on_delete=models.CASCADE)
+    
     def is_valid(self):
         return timezone.now() < self.valid_until and self.rate < self.rate_limit

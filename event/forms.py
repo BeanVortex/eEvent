@@ -10,7 +10,7 @@ class DateInput(forms.DateInput):
 class TimeInput(forms.TimeInput):
     input_type = 'time'
     
-class NewEventForm(Form):
+class EventForm(Form):
     title = forms.CharField(widget=forms.TextInput(attrs={
         "placeholder": "Awesome Event",
         "class" : style_classes
@@ -40,7 +40,7 @@ class NewEventForm(Form):
 
 class DiscountForm(Form):
     title = forms.CharField(widget=forms.TextInput(attrs={
-        "placeholder": "Discount Event",
+        "placeholder": "Discount Title",
         "class" : style_classes
     }))
     code = forms.CharField(widget=forms.Textarea(attrs={
@@ -66,7 +66,6 @@ class DiscountForm(Form):
 
     def __init__(self, *args, **kwargs):
         super(DiscountForm, self).__init__(*args, **kwargs)
-        # todo filter events for the current user
         events = Event.objects.all()
         event_choices = [(event.id, event.title) for event in events]
         self.fields['event'].choices = event_choices
