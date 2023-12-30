@@ -12,36 +12,39 @@
 
 {% block main %}
 
-<div class="container mx-auto px-4 py-8 flex items-center justify-center">
-  <div
-    class="card bg-white items-center shadow-lg w-1/2 rounded-lg overflow-hidden p-2"
-  >
-    <h1 class="text-2xl font-bold mb-4">Create Discount</h1>
+  <div class="container mx-auto px-4 py-8 flex items-center justify-center">
+    <div
+      class="card bg-white items-center shadow-lg w-1/2 rounded-lg overflow-hidden p-2"
+    >
+      <h1 class="text-2xl font-bold mb-4">Create Discount</h1>
 
-    <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md">
-      {% csrf_token %} {{ form.as_p }}
+      <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %} 
 
-      <div class="flex items-center justify-end mt-3">
-        <button
-          type="submit"
-          class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue"
-        >
-          Create Discount
-        </button>
-      </div>
-    </form>
-    {% if status %}
-      {% if status == "success" %}
-        <div class="bg-green-500 text-white p-4 mb-2 rounded-md mt-4">
-          <h3 class="text-2xl font-bold">Successfully created Discount!</h3>
+        {{ form.as_p }}
+
+        <div class="flex items-center justify-end mt-3">
+          <button
+            type="submit"
+            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:shadow-outline-blue"
+          >
+            Create Discount
+          </button>
         </div>
-      {% if status == "fail" %}
-        <div class="bg-red-500 text-white p-4 mb-2 rounded-md mt-4">
-          <h3 class="text-2xl font-bold">Discount creation failed</h3>
-          <p>{{message}}</p>
-        </div>
-      {% endif %} 
-    {% endif %}
+      </form>
+      {% if status %}
+        {% if status == "success" %}
+          <div class="bg-green-500 text-white p-4 mb-2 rounded-md mt-4">
+            <h3 class="text-2xl font-bold">Successfully created Discount!</h3>
+          </div>
+        {% endif %} 
+        {% if status == "fail" %}
+          <div class="bg-red-500 text-white p-4 mb-2 rounded-md mt-4">
+            <h3 class="text-2xl font-bold">Discount creation failed</h3>
+            <p>{{message}}</p>
+          </div>
+        {% endif %} 
+      {% endif %}
+    </div>
   </div>
-</div>
 {% endblock %}

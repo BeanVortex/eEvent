@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 from authorize.models import OrganizerUser, AttenderUser
-from .models import Event, Discount
+from .models import Event, Discount, Attendance
 from .forms import DiscountForm, NewEventForm
 from django.contrib.auth.models import User
 from datetime import datetime
@@ -84,11 +84,69 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
             return render(req, 'event/discount_form.html', {'form': form, "status": "fail", "message": str(e)})
 
 
-@login_required(login_url="/auth/login/")
-def attenderEvents(req):
-    attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
-    events = attender_user.events.all()
-    return render(req, "event/event_list.html", {"events": events})
+class AttenderEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login/"
+    permission_required = "event.view_event"
+
+    def get(self, req, **kwargs):
+        if 'eid' in kwargs:
+            return redirect("attender_events")
+        attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
+        events = attender_user.events.all()
+        return render(req, "event/event_list.html", {"events": events, "user_id": req.user.id})
+
+    def post(self, req, **kwargs):
+        event = get_object_or_404(Event, id=kwargs['eid'])
+        attender_user = get_object_or_404(
+            AttenderUser, user_id=req.user.id)
+        attender_user.events.remove(event)
+        events = attender_user.events.all()
+        return render(req, "event/event_list.html", {"events": events, "user_id": req.user.id})
+
+
+class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login/"
+    permission_required = "event.view_event"
+
+    def get(self, req, **kwargs):
+        event = Event.objects.get(id=kwargs['eid'])
+        return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id})
+
+    def post(self, req, **kwargs):
+        message = ""
+        try:
+            event = Event.objects.get(id=kwargs['eid'])
+            discount_code = req.POST["discount_code"]
+            new_price = event.price
+            attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
+            countOfAttenders = Attendance.objects.filter(event_id=event.id).count()
+            if countOfAttenders >= event.capacity:
+                raise Exception(f"This event is full {countOfAttenders}/{event.capacity}")
+            if event.is_valid():
+                raise Exception(f"This event has expired {event.starts_on}")
+            if discount_code:
+                discount = Discount.objects.get(code=discount_code)
+                if discount.event == event:
+                    if not discount.is_valid():
+                        raise Exception(f"Code is invalid. rate: {discount.rate}/{discount.rate_limit} expiration: {discount.valid_until}")
+                    percentage = discount.percentage
+                    percentage_val = (event.price * percentage) / 100
+                    new_price = event.price - percentage_val
+                    discount.rate = discount.rate + 1
+                    discount.save() 
+                else:
+                    message = "Code is invalid for this event"
+
+            else:
+                attendance = Attendance.objects.filter(attender_user_id=attender_user.id, event_id=event.id)
+                if attendance:
+                    raise Exception("You have already attended in this event")
+            attendance = Attendance(paid=True, attender_user_id=attender_user.id, event_id=event.id)
+            attendance.save()
+            return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id, "status": "success", "new_price": new_price})
+        except Exception as e:
+            message = str(e)
+        return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id, "status": "fail", "message": message})
 
 
 def viewEvent(req, eid):

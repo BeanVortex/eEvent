@@ -10,7 +10,9 @@ urlpatterns = [
     path("organizer/discount/delete/<int:did>/", views.deleteDiscount),
     path("organizer/edit/<int:eid>/", views.EditEventOrganizer.as_view()),
     
-    path("attender/", views.attenderEvents),
+    path("attender/", views.AttenderEvents.as_view(), name="attender_events"),
+    path("attender/<int:eid>/", views.AttenderEvents.as_view(), name="attender_events_post"),
+    path("attender/pay/<int:eid>/", views.AttenderPayEvents.as_view()),
     path("attender/delete/<int:eid>/", views.deleteEventFromAttender),
     path("discount/apply/<int:eid>/", views.applyDiscount),
     path("<int:eid>/", views.viewEvent),

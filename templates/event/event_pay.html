@@ -1,0 +1,62 @@
+{% extends 'menu.html' %}
+{% load static tailwind_tags %}
+
+
+{% block head %}
+  <title>Events List</title>
+  <link rel="icon" href="{% static 'logo.svg' %}">
+{% endblock %}
+
+
+{% block main %}
+
+<div class="bg-gray-50 dark:bg-gray-900 text-white p-4">
+    <div class="container mx-auto">
+        {% if event %}
+            <h1 class="text-2xl font-bold">Attending in event {{event.title}} with price of {{event.price}}</h1>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="card bg-white shadow-lg rounded-lg overflow-hidden">
+
+        <form action="" method="POST" class="bg-white p-6 rounded-lg shadow-md">
+            {% csrf_token %} 
+        
+            <div>
+                <label for="discount_code" class="block mb-2 text-sm font-medium text-gray-900">Discount code</label>
+                <input type="text" name="discount_code" id="discount_code"
+                 placeholder="Enter the code"
+                 requied="false"
+                 class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="flex items-center justify-start mt-3">
+                <button
+                    type="submit"
+                    class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:shadow-outline-green"
+                >
+                    Pay
+                </button>
+            </div>
+        </form>
+        {% if status %}
+            <div class="p-2">
+              {% if status == "success" %}
+                <div class="bg-green-500 text-white p-4 rounded-md">
+                  <h3 class="text-2xl font-bold">Successfully attended in this Event for price of {{new_price}}!</h3>
+                </div>
+              {% endif %} 
+              {% if status == "fail" %}
+                <div class="bg-red-500 text-white p-4 rounded-md">
+                  <h3 class="text-2xl font-bold">Attendance failed</h3>
+                  <p>{{message}}</p>
+                </div>
+              {% endif %} 
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

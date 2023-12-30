@@ -17,26 +17,31 @@ class OrganizerSignup(View):
 
     def post(self, req):
         form = OrganizerSignupForm(req.POST)
+        message = "invalid data entered"
         if form.is_valid():
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
-            user = User.objects.create_user(
-                username=username,
-                email=form.cleaned_data["email"],
-                password=password,
-                first_name=form.cleaned_data["firstName"],
-                last_name=form.cleaned_data["lastName"]
-            )
-            attenderGroup = Group.objects.get(name='AUTH_ORGANIZER')
-            user.groups.add(attenderGroup)
-            user.save()
-            user = User.objects.latest("id")
-            organizerUser = OrganizerUser(user=user, phone=form.cleaned_data["phone"])
-            organizerUser.save()
-            print(f"signup success: {form.cleaned_data}")
-            return doLogin(req, username, password)
-        print(f"signup failed: {form.cleaned_data}")
-        return render(req, "auth/organizer_signup.html", {"form": form, "status": "failed"})
+            try:
+                username = form.cleaned_data["username"]
+                password = form.cleaned_data["password"]
+                user = User.objects.create_user(
+                    username=username,
+                    email=form.cleaned_data["email"],
+                    password=password,
+                    first_name=form.cleaned_data["firstName"],
+                    last_name=form.cleaned_data["lastName"]
+                )
+                attenderGroup = Group.objects.get(name='AUTH_ORGANIZER')
+                user.groups.add(attenderGroup)
+                user.save()
+                user = User.objects.latest("id")
+                organizerUser = OrganizerUser(
+                    user=user, phone=form.cleaned_data["phone"])
+                organizerUser.save()
+                print(f"signup success: {form.cleaned_data}")
+                return doLogin(req, username, password)
+            except Exception as e:
+                message = str(e)
+            print(f"signup failed: {form.cleaned_data}")
+            return render(req, "auth/organizer_signup.html", {"form": form, "status": "fail", "message": message})        
 
 
 class AttenderSignup(View):
@@ -48,26 +53,31 @@ class AttenderSignup(View):
 
     def post(self, req):
         form = AttenderSignupForm(req.POST)
-        if form.is_valid(): 
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password"]
-            user = User.objects.create_user(
-                username=username,
-                email=form.cleaned_data["email"],
-                password=password,
-                first_name=form.cleaned_data["firstName"],
-                last_name=form.cleaned_data["lastName"]
+        message = "invalid data entered"
+        if form.is_valid():
+            try:
+                username = form.cleaned_data["username"]
+                password = form.cleaned_data["password"]
+                user = User.objects.create_user(
+                    username=username,
+                    email=form.cleaned_data["email"],
+                    password=password,
+                    first_name=form.cleaned_data["firstName"],
+                    last_name=form.cleaned_data["lastName"]
                 )
-            attenderGroup = Group.objects.get(name='AUTH_ATTENDER')
-            user.groups.add(attenderGroup)
-            user.save()
-            user = User.objects.latest("id")
-            attenderUser = AttenderUser(user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])
-            attenderUser.save()
-            print(f"signup success: {form.cleaned_data}")
-            return doLogin(req, username, password)
+                attenderGroup = Group.objects.get(name='AUTH_ATTENDER')
+                user.groups.add(attenderGroup)
+                user.save()
+                user = User.objects.latest("id")
+                attenderUser = AttenderUser(
+                    user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])
+                attenderUser.save()
+                print(f"signup success: {form.cleaned_data}")
+                return doLogin(req, username, password)
+            except Exception as e:
+                message = str(e)
         print(f"signup failed: {form.cleaned_data}")
-        return render(req, "auth/attender_signup.html", {"form": form, "status": "failed"})
+        return render(req, "auth/attender_signup.html", {"form": form, "status": "fail", "message": message})
 
 
 class Login(View):
@@ -82,15 +92,18 @@ class Login(View):
         return doLogin(req, username, password)
 
 
-
 def doLogin(req, username, password):
     authenticatedUser = authenticate(username=username, password=password)
-    if authenticatedUser:
+    try:
+        if not authenticatedUser:
+            raise Exception(
+                "Failed to authenticate, maybe wrong username or password")
         login(req, authenticatedUser)
         print(f"login success: {username}")
         return redirect("index")
-    else:
-        return render(req, "auth/login.html", {"status": "failed"})
+    except Exception as e:
+        return render(req, "auth/login.html", {"status": "fail", "message": str(e)})
+
 
 class Logout(View):
     def get(self, req):
