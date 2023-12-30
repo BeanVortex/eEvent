@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.utils import timezone
 
 from authorize.models import OrganizerUser, AttenderUser
 from .models import Event, Discount, Attendance
@@ -22,23 +23,78 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def post(self, req):
         form = EventForm(req.POST)
-        if form.is_valid():
-            title = form.cleaned_data["title"]
-            description = form.cleaned_data["description"]
-            location = form.cleaned_data["location"]
-            price = form.cleaned_data["price"]
-            start_date = form.cleaned_data["start_date"]
-            start_time = form.cleaned_data["start_time"]
-            starts_on = datetime.combine(start_date, start_time)
-            aware_datetime = timezone.make_aware(starts_on)
-            capacity = form.cleaned_data["capacity"]
-            orgId = req.user.id
-            orgUser = OrganizerUser.objects.get(user_id=orgId)
-            event = Event(title=title, description=description, location=location, price=price,
-                          starts_on=aware_datetime, capacity=capacity, organizer_user=orgUser)
-            event.save()
-            log.info(f"Saved event: {event.id}")
-        return redirect("event_index")
+        try:
+            if form.is_valid():
+                title = form.cleaned_data["title"]
+                description = form.cleaned_data["description"]
+                location = form.cleaned_data["location"]
+                price = form.cleaned_data["price"]
+                start_date = form.cleaned_data["start_date"]
+                start_time = form.cleaned_data["start_time"]
+                starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
+                capacity = form.cleaned_data["capacity"]
+                if capacity <= 0:
+                    raise Exception("Capacity cannot be 0 or less")
+                if price < 0:
+                    raise Exception("Price cannot be less than 0")
+                if timezone.now() > starts_on:
+                    raise Exception("Date and time cannot be set in the past")
+                orgId = req.user.id
+                orgUser = OrganizerUser.objects.get(user_id=orgId)
+                event = Event(title=title, description=description, location=location, price=price,
+                              starts_on=starts_on, capacity=capacity, organizer_user=orgUser)
+                event.save()
+                log.info(f"Saved event: {event.id}")
+            return redirect("event_index")
+        except Exception as e:
+            log.error(str(e))
+            return render(req, "event/event_save.html", {"form": form, "status":"fail", "message": str(e)})
+
+
+
+class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
+    login_url = "/auth/login/"
+    permission_required = "event.change_event"
+
+    def get(self, req, **kwargs):
+        event = Event.objects.get(id=kwargs["eid"])
+        initial_data = {
+            "title": event.title,
+            "description": event.description,
+            "location": event.location,
+            "price": event.price,
+            "start_date": event.starts_on.date,
+            "start_time": event.starts_on.time,
+            "capacity": event.capacity}
+        form = EventForm(initial=initial_data)
+        return render(req, "event/event_save.html", {"form": form})
+
+    def post(self, req, **kwargs):
+        form = EventForm(req.POST)
+        try:
+            if form.is_valid():
+                event = Event.objects.get(id=kwargs["eid"])
+                event.title = form.cleaned_data["title"]
+                event.description = form.cleaned_data["description"]
+                event.location = form.cleaned_data["location"]
+                event.price = form.cleaned_data["price"]
+                start_date = form.cleaned_data["start_date"]
+                start_time = form.cleaned_data["start_time"]
+                starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
+                event.starts_on = starts_on
+                event.capacity = form.cleaned_data["capacity"]
+                if event.capacity <= 0:
+                    raise Exception("Capacity cannot be 0 or less")
+                if event.price < 0:
+                    raise Exception("Price cannot be less than 0")
+                if timezone.now() > starts_on:
+                    raise Exception("Date and time cannot be set in the past")
+                event.save()
+                log.info(f"Successfully updated event {event.id}")
+                return redirect("event_index")
+        except Exception as e:
+            log.error(str(e))
+            return render(req, "event/event_save.html", {"form": form, "status":"fail", "message": str(e)})
 
 
 @login_required(login_url="/auth/login")
@@ -118,12 +174,16 @@ class EditDiscountOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                 discount.percentage = form.cleaned_data["percentage"]
                 end_date = form.cleaned_data["end_date"]
                 end_time = form.cleaned_data["end_time"]
-                valid_until = datetime.combine(end_date, end_time)
-                discount.valid_until = timezone.make_aware(valid_until)
+                valid_until = timezone.make_aware(datetime.combine(end_date, end_time))
+                if timezone.now() > valid_until:
+                    raise Exception("Date and time cannot be set in the past")
+                discount.valid_until = valid_until
                 event = int(form.cleaned_data["event"])
                 if not event == discount.event.id:
                     raise Exception("You can't change the event")
                 rate_limit = form.cleaned_data["rate_limit"]
+                if rate_limit <= 0:
+                    raise Exception("Rate limit cannot be 0 or less")
                 if discount.rate > rate_limit:
                     raise Exception(f"You can't decrease rate limit, rate/rate limit !~ {discount.rate}/{rate_limit} ")
                 discount.rate_limit = rate_limit
@@ -155,12 +215,16 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
                 rate_limit = form.cleaned_data["rate_limit"]
                 end_date = form.cleaned_data["end_date"]
                 end_time = form.cleaned_data["end_time"]
-                valid_until = datetime.combine(end_date, end_time)
-                aware_datetime = timezone.make_aware(valid_until)
+                valid_until = timezone.make_aware(datetime.combine(end_date, end_time))
+
+                if rate_limit <= 0:
+                    raise Exception("Rate limit cannot be 0 or less")
+                if timezone.now() > valid_until:
+                    raise Exception("Date and time cannot be set in the past")
                 eventId = form.cleaned_data["event"]
                 event = Event.objects.get(id=eventId)
                 organizer_user = OrganizerUser.objects.get(user_id=req.user.id)
-                discount = Discount(title=title, code=code, percentage=percentage, valid_until=aware_datetime,
+                discount = Discount(title=title, code=code, percentage=percentage, valid_until=valid_until,
                                     rate_limit=rate_limit, organizer_user=organizer_user, event=event)
                 discount.save()
                 log.info(f"Discount saved: {discount.id}")
@@ -215,29 +279,28 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
             if countOfAttenders >= event.capacity:
                 raise Exception(f"This event is full {
                                 countOfAttenders}/{event.capacity}")
-            if event.is_valid():
+            if not event.is_valid():
                 raise Exception(f"This event has expired {event.starts_on}")
-            if discount_code:
-                discount = Discount.objects.get(code=discount_code)
-                if discount.event == event:
-                    if not discount.is_valid():
+            
+            attendance = Attendance.objects.filter(attender_user_id=attender_user.id, event_id=event.id)
+            if attendance:
+                raise Exception("You have already attended in this event")
+
+            discount = Discount.objects.filter(code=discount_code)
+            if discount:
+                if discount[0].event == event:
+                    if not discount[0].is_valid():
                         raise Exception(f"Code is invalid. rate: {
-                                        discount.rate}/{discount.rate_limit} expiration: {discount.valid_until}")
-                    percentage = discount.percentage
+                                        discount[0].rate}/{discount[0].rate_limit} expiration: {discount[0].valid_until}")
+                    percentage = discount[0].percentage
                     percentage_val = (event.price * percentage) / 100
                     new_price = event.price - percentage_val
-                    discount.rate = discount.rate + 1
-                    discount.save()
-                    log.info(f"Applying discount {discount.id} on event {event.id} with user {attender_user.id}")
+                    discount[0].rate = discount[0].rate + 1
+                    discount[0].save()
+                    log.info(f"Applying discount {discount[0].id} on event {event.id} with user {attender_user.id}")
                 else:
                     message = "Code is invalid for this event"
 
-            else:
-                attendance = Attendance.objects.filter(
-                    attender_user_id=attender_user.id, event_id=event.id)
-                log.info(f"User {attender_user.id} attending in event {event.id} without discount code")
-                if attendance:
-                    raise Exception("You have already attended in this event")
             attendance = Attendance(
                 paid=True, attender_user_id=attender_user.id, event_id=event.id)
             attendance.save()
@@ -272,41 +335,6 @@ def viewEvent(req, eid):
 def viewAllEvents(req):
     events = Event.objects.all()
     return render(req, "event/event_list.html", {"events": events})
-
-
-class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
-    login_url = "/auth/login/"
-    permission_required = "event.change_event"
-
-    def get(self, req, **kwargs):
-        event = Event.objects.get(id=kwargs["eid"])
-        initial_data = {
-            "title": event.title,
-            "description": event.description,
-            "location": event.location,
-            "price": event.price,
-            "start_date": event.starts_on.date,
-            "start_time": event.starts_on.time,
-            "capacity": event.capacity}
-        form = EventForm(initial=initial_data)
-        return render(req, "event/event_save.html", {"form": form})
-
-    def post(self, req, **kwargs):
-        form = EventForm(req.POST)
-        if form.is_valid():
-            event = Event.objects.get(id=kwargs["eid"])
-            event.title = form.cleaned_data["title"]
-            event.description = form.cleaned_data["description"]
-            event.location = form.cleaned_data["location"]
-            event.price = form.cleaned_data["price"]
-            start_date = form.cleaned_data["start_date"]
-            start_time = form.cleaned_data["start_time"]
-            starts_on = datetime.combine(start_date, start_time)
-            event.starts_on = timezone.make_aware(starts_on)
-            event.capacity = form.cleaned_data["capacity"]
-            event.save()
-            log.info(f"Successfully updated event {event.id}")
-        return redirect("event_index")
 
 
 def searchByTitle(req):
