@@ -1,3 +1,16 @@
+## Instructions to run, are at the end
+
+eEvent is an online event attendance.
+
+There are two users:
+- Organizer who creates events and discounts for events
+- Attender who attends in events with or without using discounts
+
+These users have their own panel and signup section
+Login is same for all
+
+
+
 First install nodejs
 
 then in project folder run
