@@ -38,8 +38,8 @@ and run maildev
 maildev
 ```
 
-and you can see mails on:
-```http://localhost:1080```
+and you can see the mails on:
+```http://{host}:1080```
 
 
 and run tailwind to show styles
