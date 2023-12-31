@@ -66,6 +66,6 @@ class DiscountForm(Form):
 
     def __init__(self, *args, **kwargs):
         super(DiscountForm, self).__init__(*args, **kwargs)
-        events = Event.objects.all()
+        events = Event.events.all()
         event_choices = [(event.id, event.title) for event in events]
         self.fields['event'].choices = event_choices
