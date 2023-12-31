@@ -57,7 +57,7 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = "event.change_event"
 
     def get(self, req, **kwargs):
-        event = Event.objects.get(id=kwargs["eid"])
+        event = Event.events.getById(kwargs["eid"])
         initial_data = {
             "title": event.title,
             "description": event.description,
@@ -73,7 +73,7 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
         form = EventForm(req.POST)
         try:
             if form.is_valid():
-                event = Event.objects.get(id=kwargs["eid"])
+                event = Event.events.getById(kwargs["eid"])
                 event.title = form.cleaned_data["title"]
                 event.description = form.cleaned_data["description"]
                 event.location = form.cleaned_data["location"]
@@ -100,7 +100,7 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
 @login_required(login_url="/auth/login")
 def organizerEvents(req):
     organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
-    events = Event.objects.filter(organizer_user=organizer)
+    events = Event.events.getAllByOrganizer(organizer)
     return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.getDisplayName()})
 
 
@@ -109,9 +109,9 @@ def organizerEvents(req):
 def deleteOrganizerEvent(req, eid):
     try:
         organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
-        event = Event.objects.get(organizer_user=organizer, id=eid)
+        event = Event.events.getByOrganizerAndId(organizer,eid)
         event.delete()
-        events = Event.objects.all()
+        events = Event.events.all()
         return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.getDisplayName()})
     except Exception as e:
         log.error(str(e))
@@ -120,7 +120,7 @@ def deleteOrganizerEvent(req, eid):
 
 def viewOrganizerEventsById(req, oid):
     organizer = OrganizerUser.objects.get(id=oid)
-    events = Event.objects.filter(organizer_user=organizer)
+    events = Event.events.getAllByOrganizer(organizer)
     return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.getDisplayName()})
 
 
@@ -128,7 +128,7 @@ def viewOrganizerEventsById(req, oid):
 @permission_required(perm="event.view_discount")
 def viewOrganizerDiscounts(req):
     organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
-    discounts = Discount.objects.filter(organizer_user=organizer)
+    discounts = Discount.discounts.getAllByOrganizer(organizer)
     return render(req, "event/discount_list.html", {"discounts": discounts, "organizer_name": organizer.getDisplayName()})
 
 
@@ -137,9 +137,9 @@ def viewOrganizerDiscounts(req):
 def deleteOrganizerDiscount(req, did):
     try:
         organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
-        discount = Discount.objects.get(organizer_user=organizer, id=did)
+        discount = Discount.discounts.getByOrganizerAndId(organizer, did)
         discount.delete()
-        discounts = Discount.objects.filter(organizer_user=organizer)
+        discounts = Discount.discounts.getAllByOrganizer(organizer)
         log.info(f"Deleted discount: {discount.id}")
         return render(req, "event/discount_list.html", {"discounts": discounts, "organizer_name": organizer.getDisplayName()})
     except Exception as e:
@@ -152,7 +152,7 @@ class EditDiscountOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = "event.change_discount"
 
     def get(self, req, **kwargs):
-        discount = Discount.objects.get(id=kwargs["did"])
+        discount = Discount.discounts.getById(kwargs["did"])
         initial_data = {
             "title": discount.title,
             "code": discount.code,
@@ -168,7 +168,7 @@ class EditDiscountOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
         form = DiscountForm(req.POST)
         try:
             if form.is_valid():
-                discount = Discount.objects.get(id=kwargs["did"])
+                discount = Discount.discounts.getById(kwargs["did"])
                 discount.title = form.cleaned_data["title"]
                 discount.code = form.cleaned_data["code"]
                 discount.percentage = form.cleaned_data["percentage"]
@@ -222,7 +222,7 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
                 if timezone.now() > valid_until:
                     raise Exception("Date and time cannot be set in the past")
                 eventId = form.cleaned_data["event"]
-                event = Event.objects.get(id=eventId)
+                event = Event.events.getById(eventId)
                 organizer_user = OrganizerUser.objects.get(user_id=req.user.id)
                 discount = Discount(title=title, code=code, percentage=percentage, valid_until=valid_until,
                                     rate_limit=rate_limit, organizer_user=organizer_user, event=event)
@@ -250,8 +250,7 @@ class AttenderEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
 
     def post(self, req, **kwargs):
         event = get_object_or_404(Event, id=kwargs['eid'])
-        attender_user = get_object_or_404(
-            AttenderUser, user_id=req.user.id)
+        attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
         attender_user.events.remove(event)
         events = attender_user.events.all()
         log.info(f"Removed event {event.title} from attender user {attender_user.id}")
@@ -263,22 +262,19 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = "event.view_event"
 
     def get(self, req, **kwargs):
-        event = Event.objects.get(id=kwargs['eid'])
+        event = Event.events.getById(kwargs['eid'])
         return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id})
 
     def post(self, req, **kwargs):
         message = ""
         try:
-            event = Event.objects.get(id=kwargs['eid'])
+            event = Event.events.getById(kwargs['eid'])
             discount_code = req.POST["discount_code"]
             new_price = event.price
-            attender_user = get_object_or_404(
-                AttenderUser, user_id=req.user.id)
-            countOfAttenders = Attendance.objects.filter(
-                event_id=event.id).count()
+            attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
+            countOfAttenders = Attendance.objects.filter(event_id=event.id).count()
             if countOfAttenders >= event.capacity:
-                raise Exception(f"This event is full {
-                                countOfAttenders}/{event.capacity}")
+                raise Exception(f"This event is full {countOfAttenders}/{event.capacity}")
             if not event.is_valid():
                 raise Exception(f"This event has expired {event.starts_on}")
             
@@ -286,20 +282,20 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
             if attendance:
                 raise Exception("You have already attended in this event")
 
-            discount = Discount.objects.filter(code=discount_code)
-            if discount:
-                if discount[0].event == event:
-                    if not discount[0].is_valid():
-                        raise Exception(f"Code is invalid. rate: {
-                                        discount[0].rate}/{discount[0].rate_limit} expiration: {discount[0].valid_until}")
-                    percentage = discount[0].percentage
-                    percentage_val = (event.price * percentage) / 100
-                    new_price = event.price - percentage_val
-                    discount[0].rate = discount[0].rate + 1
-                    discount[0].save()
-                    log.info(f"Applying discount {discount[0].id} on event {event.id} with user {attender_user.id}")
-                else:
-                    message = "Code is invalid for this event"
+            if discount_code:
+                discount = Discount.discounts.getByCode(discount_code)
+                if discount:
+                    if discount[0].event == event:
+                        if not discount[0].is_valid():
+                            raise Exception(f"Code is invalid. rate: {discount[0].rate}/{discount[0].rate_limit} expiration: {discount[0].valid_until}")
+                        percentage = discount[0].percentage
+                        percentage_val = (event.price * percentage) / 100
+                        new_price = event.price - percentage_val
+                        discount[0].rate = discount[0].rate + 1
+                        discount[0].save()
+                        log.info(f"Applying discount {discount[0].id} on event {event.id} with user {attender_user.id}")
+                    else:
+                        message = "Code is invalid for this event"
 
             attendance = Attendance(
                 paid=True, attender_user_id=attender_user.id, event_id=event.id)
@@ -315,11 +311,10 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
 
 
 def viewEvent(req, eid):
-    event = Event.objects.get(pk=eid)
+    event = Event.events.getById(eid)
     if req.method == "POST" and req.user.is_authenticated:
         try:
-            attender_user = get_object_or_404(
-                AttenderUser, user_id=req.user.id)
+            attender_user = get_object_or_404(AttenderUser, user_id=req.user.id)
             if attender_user.events.filter(id=eid).exists():
                 raise Exception("You have already attended in this event")
             attender_user.events.add(event)
@@ -333,16 +328,12 @@ def viewEvent(req, eid):
 
 
 def viewAllEvents(req):
-    events = Event.objects.all()
+    events = Event.events.all()
     return render(req, "event/event_list.html", {"events": events})
 
 
 def searchByTitle(req):
     if req.method == "POST":
         title = req.POST['title_search']
-        events = Event.objects.filter(title__contains=title)
+        events = Event.events.allTitleContains(title)
         return render(req, "event/event_list.html", {"events": events})
-
-# todo managers
-# todo email send
-# todo postgres
