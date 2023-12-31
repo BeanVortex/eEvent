@@ -29,6 +29,19 @@ then
 python manage.py tailwind install
 ```
 
+install maildev
+```bash
+npm -g install maildev
+```
+and run maildev
+```bash
+maildev
+```
+
+and you can see mails on:
+```http://localhost:1080```
+
+
 and run tailwind to show styles
 
 ```bash

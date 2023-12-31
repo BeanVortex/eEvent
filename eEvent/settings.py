@@ -173,3 +173,16 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+isEmailConfirmation=True
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_USE_TLS = False
+EMAIL_PORT = 1025
+# EMAIL_HOST_USER = "admin"
+# EMAIL_HOST_PASSWORD = "admin-pass"
+
+APP_HOST="http://localhost:8000"

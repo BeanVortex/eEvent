@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.utils import timezone
 
 from authorize.models import OrganizerUser, AttenderUser
 from .models import Event, Discount, Attendance

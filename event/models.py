@@ -2,7 +2,6 @@ from django.utils import timezone
 from django.db import models
 from authorize.models import OrganizerUser, AttenderUser
 from .managers import EventManager, DiscountManager
-# Create your models here.
 
 
 class Event(models.Model):
