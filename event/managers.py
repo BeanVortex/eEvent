@@ -10,7 +10,7 @@ class EventManager(Manager):
     def getByOrganizerAndId(self, organizer, id):
         return super().get_queryset().get(organizer_user=organizer, id=id)
     def allTitleContains(self, title):
-        return super().get_queryset().get(title__contains=title)
+        return super().get_queryset().filter(title__contains=title)
     
 
 class DiscountManager(Manager):
