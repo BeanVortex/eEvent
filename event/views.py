@@ -296,8 +296,7 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
                     else:
                         message = "Code is invalid for this event"
 
-            attendance = Attendance(
-                paid=True, attender_user_id=attender_user.id, event_id=event.id)
+            attendance = Attendance(paid=True, attender_user_id=attender_user.id, event_id=event.id)
             attendance.save()
             log.info(f"User {attender_user.id} attended in event {event.id}")
             return render(req, "event/event_pay.html", {"event": event, "user_id": req.user.id, "status": "success", "new_price": new_price})
