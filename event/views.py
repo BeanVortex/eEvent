@@ -284,15 +284,15 @@ class AttenderPayEvents(LoginRequiredMixin, PermissionRequiredMixin, View):
             if discount_code:
                 discount = Discount.discounts.getByCode(discount_code)
                 if discount:
-                    if discount[0].event == event:
-                        if not discount[0].is_valid():
-                            raise Exception(f"Code is invalid. rate: {discount[0].rate}/{discount[0].rate_limit} expiration: {discount[0].valid_until}")
-                        percentage = discount[0].percentage
+                    if discount.event == event:
+                        if not discount.is_valid():
+                            raise Exception(f"Code is invalid. rate: {discount.rate}/{discount.rate_limit} expiration: {discount.valid_until}")
+                        percentage = discount.percentage
                         percentage_val = (event.price * percentage) / 100
                         new_price = event.price - percentage_val
-                        discount[0].rate = discount[0].rate + 1
-                        discount[0].save()
-                        log.info(f"Applying discount {discount[0].id} on event {event.id} with user {attender_user.id}")
+                        discount.rate = discount.rate + 1
+                        discount.save()
+                        log.info(f"Applying discount {discount.id} on event {event.id} with user {attender_user.id}")
                     else:
                         message = "Code is invalid for this event"
 
