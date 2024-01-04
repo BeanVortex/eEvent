@@ -64,8 +64,8 @@ class DiscountForm(Form):
         'class': 'form-select '+ style_classes
     }))
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, oid, *args, **kwargs):
         super(DiscountForm, self).__init__(*args, **kwargs)
-        events = Event.events.all()
+        events = Event.events.getAllByOrganizer(oid)
         event_choices = [(event.id, event.title) for event in events]
         self.fields['event'].choices = event_choices

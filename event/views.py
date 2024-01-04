@@ -201,7 +201,8 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
     permission_required = "event.add_discount"
 
     def get(self, req):
-        form = DiscountForm()
+        organizerUser = OrganizerUser.objects.get(user_id=req.user.id)
+        form = DiscountForm(oid=organizerUser.id)
         return render(req, 'event/discount_save.html', {'form': form})
 
     def post(self, req):
