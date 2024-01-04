@@ -11,7 +11,7 @@ urlpatterns = [
     path("organizer/discount/delete/<int:did>/", views.deleteOrganizerDiscount),
     path("organizer/discount/edit/<int:did>/", views.EditDiscountOrganizer.as_view()),
     path("organizer/discount/add/", views.AddDiscount.as_view(), name="organizer_add_discount"),
-    path("organizer/edit/<int:eid>/", views.EditEventOrganizer.as_view()),
+    path("organizer/edit/<int:eid>/", views.EditEventOrganizer.as_view(), name="organizer_edit_discount"),
     
     path("attender/", views.AttenderEvents.as_view(), name="attender_events"),
     path("attender/<int:eid>/", views.AttenderEvents.as_view(), name="attender_events_post"),
