@@ -206,7 +206,8 @@ class AddDiscount(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(req, 'event/discount_save.html', {'form': form})
 
     def post(self, req):
-        form = DiscountForm(req.POST)
+        organizerUser = OrganizerUser.objects.get(user_id=req.user.id)
+        form = DiscountForm(organizerUser.id, req.POST)
         try:
             if form.is_valid():
                 title = form.cleaned_data["title"]

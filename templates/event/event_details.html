@@ -17,9 +17,11 @@
       </div>
       <div class="card-body p-4 grid grid-cols-2 gap-4">
         <div class="col-span-1">
+          <p class="text-sm text-gray-500">Title</p>
           <p class="text-lg font-semibold">{{ event.title }}</p>
         </div>
         <div class="col-span-1">
+          <p class="text-sm text-gray-500">Description</p>
           <p class="text-lg font-semibold">{{ event.description }}</p>
         </div>
         <div class="col-span-1">
@@ -31,15 +33,9 @@
           <p class="text-lg font-semibold">${{ event.price }}</p>
         </div>
         <div class="col-span-1">
-          <p class="text-sm text-gray-500">Start Date</p>
+          <p class="text-sm text-gray-500">Starts on</p>
           <p class="text-lg font-semibold">
-            {{ event.start_date | date:"M d, Y h:i A" }}
-          </p>
-        </div>
-        <div class="col-span-1">
-          <p class="text-sm text-gray-500">Valid Until</p>
-          <p class="text-lg font-semibold">
-            {{ event.valid_until | date:"M d, Y h:i A" }}
+            {{ event.starts_on | date:"M d, Y h:i A" }}
           </p>
         </div>
         <div class="col-span-1">
@@ -68,7 +64,9 @@
         {% endif %}
         {% if group.name == "AUTH_ATTENDER" %}
           <div class="p-2 w-full">
+
             {% csrf_token %}
+
             <a href="/events/attender/pay/{{event.id}}/"> 
               <button  class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4
               focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 
