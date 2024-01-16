@@ -4,13 +4,16 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 from authorize.models import OrganizerUser, AttenderUser
-from .models import Event, Discount, Attendance
+from .models import *
 from .forms import DiscountForm, EventForm
 from datetime import datetime
 from django.utils import timezone
 import logging
+from django.core.files.storage import FileSystemStorage
+import uuid
 
 log = logging.getLogger(__name__)
+fs = FileSystemStorage()
 
 class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     login_url = "/auth/login"
@@ -21,7 +24,7 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
         return render(req, "event/event_save.html", {"form": form})
 
     def post(self, req):
-        form = EventForm(req.POST)
+        form = EventForm(req.POST, req.FILES)
         try:
             if form.is_valid():
                 title = form.cleaned_data["title"]
@@ -32,6 +35,7 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                 start_time = form.cleaned_data["start_time"]
                 starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
                 capacity = form.cleaned_data["capacity"]
+                img = req.FILES["images"]
                 if capacity <= 0:
                     raise Exception("Capacity cannot be 0 or less")
                 if price < 0:
@@ -40,9 +44,11 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                     raise Exception("Date and time cannot be set in the past")
                 orgId = req.user.id
                 orgUser = OrganizerUser.objects.get(user_id=orgId)
+                filename = "media/" + fs.save(img.name, img)
                 event = Event(title=title, description=description, location=location, price=price,
-                              starts_on=starts_on, capacity=capacity, organizer_user=orgUser)
+                              starts_on=starts_on, capacity=capacity, organizer_user=orgUser, image=filename)
                 event.save()
+
                 log.info(f"Saved event: {event.id}")
             return redirect("event_index")
         except Exception as e:
@@ -64,12 +70,13 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
             "price": event.price,
             "start_date": event.starts_on.date,
             "start_time": event.starts_on.time,
-            "capacity": event.capacity}
+            "capacity": event.capacity
+            }
         form = EventForm(initial=initial_data)
-        return render(req, "event/event_save.html", {"form": form})
+        return render(req, "event/event_save.html", {"form": form, "image": event.image})
 
     def post(self, req, **kwargs):
-        form = EventForm(req.POST)
+        form = EventForm(req.POST, req.FILES)
         try:
             if form.is_valid():
                 event = Event.events.getById(kwargs["eid"])
@@ -82,13 +89,17 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                 starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
                 event.starts_on = starts_on
                 event.capacity = form.cleaned_data["capacity"]
+                if req.FILES:
+                    img = req.FILES["images"]
+                    filename = "media/" + fs.save(img.name, img)
+                    event.image = filename
                 if event.capacity <= 0:
                     raise Exception("Capacity cannot be 0 or less")
                 if event.price < 0:
                     raise Exception("Price cannot be less than 0")
                 if timezone.now() > starts_on:
                     raise Exception("Date and time cannot be set in the past")
-                event.save()
+                event.save()    
                 log.info(f"Successfully updated event {event.id}")
                 return redirect("event_index")
         except Exception as e:

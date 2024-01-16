@@ -2,6 +2,8 @@ from django.utils import timezone
 from django.db import models
 from authorize.models import OrganizerUser, AttenderUser
 from .managers import EventManager, DiscountManager
+import os
+import uuid
 
 
 class Event(models.Model):
@@ -13,6 +15,7 @@ class Event(models.Model):
     capacity = models.IntegerField()
     organizer_user = models.ForeignKey(OrganizerUser, on_delete=models.CASCADE)
     attender_users = models.ManyToManyField(AttenderUser, through='Attendance', related_name="events", blank=True)
+    image = models.ImageField(upload_to="media")
 
     events = EventManager()
 
@@ -27,6 +30,9 @@ class Attendance(models.Model):
     attender_user = models.ForeignKey(AttenderUser, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     paid = models.BooleanField(default=False)
+
+
+
 
 
 class Discount(models.Model):

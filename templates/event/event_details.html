@@ -17,12 +17,15 @@
       </div>
       <div class="card-body p-4 grid grid-cols-2 gap-4">
         <div class="col-span-1">
-          <p class="text-sm text-gray-500">Title</p>
-          <p class="text-lg font-semibold">{{ event.title }}</p>
+          <img src="/{{event.image}}" class="w-full" alt="img"/>
         </div>
         <div class="col-span-1">
           <p class="text-sm text-gray-500">Description</p>
           <p class="text-lg font-semibold">{{ event.description }}</p>
+        </div>
+        <div class="col-span-1">
+          <p class="text-sm text-gray-500">Title</p>
+          <p class="text-lg font-semibold">{{ event.title }}</p>
         </div>
         <div class="col-span-1">
           <p class="text-sm text-gray-500">Location</p>

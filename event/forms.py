@@ -36,6 +36,10 @@ class EventForm(Form):
         "placeholder": "Determine capacity of the event",
         "class" : style_classes
     }))
+    images = forms.FileField(required=False, widget=forms.FileInput(attrs={
+        "placeholder": "Upload your image",
+        "class" : style_classes
+    }))
 
 
 class DiscountForm(Form):
