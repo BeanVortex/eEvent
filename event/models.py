@@ -2,9 +2,6 @@ from django.utils import timezone
 from django.db import models
 from authorize.models import OrganizerUser, AttenderUser
 from .managers import EventManager, DiscountManager
-import os
-import uuid
-
 
 class Event(models.Model):
     title = models.TextField(max_length=100)
@@ -30,9 +27,6 @@ class Attendance(models.Model):
     attender_user = models.ForeignKey(AttenderUser, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     paid = models.BooleanField(default=False)
-
-
-
 
 
 class Discount(models.Model):
