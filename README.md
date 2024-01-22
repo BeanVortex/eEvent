@@ -48,6 +48,17 @@ and run tailwind to show styles
 python manage.py tailwind start
 ```
 
+create super user:
+
+```bash
+python manage.py createsuperuser
+```
+
+go to django admin and create two groups:
+
+- AUTH_ORGANIZER: should have all event, discount, attendence permissions
+- AUTH_ATTENDER: should have only view permission for event and discount, all permisions for attendence
+
 finally run the app
 
 ```bash
