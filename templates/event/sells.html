@@ -1,0 +1,38 @@
+{% extends 'menu.html' %}
+{% load static tailwind_tags %}
+
+
+{% block head %}
+  <title>لیست فروش</title>
+  <link rel="icon" href="{% static 'logo.svg' %}">
+{% endblock %}
+
+
+{% block main %}
+<div class="p-6">
+    <div class="w-1/2 mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="md:flex ">
+            {% for s in sells %}
+                <div class="p-4">
+                    <div class="mt-2">
+                        <span class="text-gray-500">عنوان: </span><span class="font-semibold">{{ s.title }}</span>
+                    </div>
+                    <span class="mt-2 text-gray-500">توضیحات: </span><span class="font-semibold">{{ s.description }}</span>
+                    <div class="mt-2">
+                        <span class="text-gray-500">کد قطعه: </span><span class="font-semibold">{{ s.part_id }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-gray-500">قیمت: </span><span class="font-semibold">{{ s.price }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-gray-500">تعداد: </span><span class="font-semibold">{{ s.capacity }}</span>
+                    </div>
+                    <div class="mt-2">
+                        <span class="text-gray-500">نام خریدار: </span><span class="font-semibold">{{ s.first_name }} {{s.last_name}}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

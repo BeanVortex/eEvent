@@ -20,7 +20,8 @@ class Event(models.Model):
         return self.title
 
     def is_valid(self):
-        return timezone.now() < self.starts_on
+        return True
+     
 
 
 class Attendance(models.Model):

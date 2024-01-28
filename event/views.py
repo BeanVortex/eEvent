@@ -10,7 +10,8 @@ from datetime import datetime
 from django.utils import timezone
 import logging
 from django.core.files.storage import FileSystemStorage
-import uuid
+from django.db import connection
+from datetime import datetime, timedelta
 
 log = logging.getLogger(__name__)
 fs = FileSystemStorage()
@@ -29,11 +30,8 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
             if form.is_valid():
                 title = form.cleaned_data["title"]
                 description = form.cleaned_data["description"]
-                location = form.cleaned_data["location"]
                 price = form.cleaned_data["price"]
-                start_date = form.cleaned_data["start_date"]
-                start_time = form.cleaned_data["start_time"]
-                starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
+                starts_on = timezone.now() + timedelta(days=5000)
                 capacity = form.cleaned_data["capacity"]
                 img = req.FILES["images"]
                 if capacity <= 0:
@@ -45,8 +43,8 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                 orgId = req.user.id
                 orgUser = OrganizerUser.objects.get(user_id=orgId)
                 filename = "media/" + fs.save(img.name, img)
-                event = Event(title=title, description=description, location=location, price=price,
-                              starts_on=starts_on, capacity=capacity, organizer_user=orgUser, image=filename)
+                event = Event(title=title, description=description, location="dfsg", price=price,
+                              starts_on=timezone.now(), capacity=capacity, organizer_user=orgUser, image=filename)
                 event.save()
 
                 log.info(f"Saved event: {event.id}")
@@ -66,10 +64,7 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
         initial_data = {
             "title": event.title,
             "description": event.description,
-            "location": event.location,
             "price": event.price,
-            "start_date": event.starts_on.date,
-            "start_time": event.starts_on.time,
             "capacity": event.capacity
             }
         form = EventForm(initial=initial_data)
@@ -82,11 +77,9 @@ class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
                 event = Event.events.getById(kwargs["eid"])
                 event.title = form.cleaned_data["title"]
                 event.description = form.cleaned_data["description"]
-                event.location = form.cleaned_data["location"]
+                event.location = "gf"
                 event.price = form.cleaned_data["price"]
-                start_date = form.cleaned_data["start_date"]
-                start_time = form.cleaned_data["start_time"]
-                starts_on = timezone.make_aware(datetime.combine(start_date, start_time))
+                starts_on = timezone.now() + timedelta(days=5000)
                 event.starts_on = starts_on
                 event.capacity = form.cleaned_data["capacity"]
                 if req.FILES:
@@ -113,6 +106,15 @@ def organizerEvents(req):
     events = Event.events.getAllByOrganizer(organizer)
     return render(req, "event/event_list.html", {"events": events, "organizer_name": organizer.getDisplayName()})
 
+@login_required(login_url="/auth/login")
+def organizerSells(req):
+    organizer = get_object_or_404(OrganizerUser, user_id=req.user.id)
+    cursor = connection.cursor()
+    cursor.execute(f'select title, description, price, capacity, event_id, first_name, last_name  from event_event ee inner join event_attendance ea on ee.id = ea.event_id inner join authorize_attenderuser aa on ea.attender_user_id=aa.id inner join auth_user au on au.id = aa.user_id where organizer_user_id = {organizer.id};') 
+    f = cursor.fetchall()
+    keys = ['title', 'description', 'price', 'capacity', 'part_id', 'first_name', 'last_name']
+    sells = [dict(zip(keys, values)) for values in f]
+    return render(req, "event/sells.html", {"sells": sells, "organizer_name": organizer.getDisplayName()})
 
 @login_required(login_url="/auth/login")
 @permission_required(perm="event.delete_event")
@@ -348,3 +350,7 @@ def searchByTitle(req):
         title = req.POST['title_search']
         events = Event.events.allTitleContains(title)
         return render(req, "event/event_list.html", {"events": events})
+    
+def switch(req):
+
+    return render(req, "event/start.html", {})

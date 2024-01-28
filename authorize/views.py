@@ -85,7 +85,7 @@ class AttenderSignup(View):
                 user.save()
                 user = User.objects.latest("id")
                 attenderUser = AttenderUser(
-                    user=user, phone=form.cleaned_data["phone"], multiple=form.cleaned_data["multiple"])
+                    user=user, phone=form.cleaned_data["phone"], multiple=False)
                 attenderUser.save()
                 log.info(f"Attender signup success: {attenderUser.id}")
                 if settings.isEmailConfirmation:

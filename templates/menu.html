@@ -11,38 +11,46 @@
     
     {% endblock %}
 </head>
-<body class="bg-gray-100 font-sans">
+<body dir="rtl" class="bg-gray-100 font-sans">
     <header class="w-full h-16 bg-gray-50 dark:bg-gray-900 text-white px-2 drop-shadow-lg sticky top-0">
         <div class="container px-4 md:px-0 h-full mx-auto flex justify-between items-center">
             <a href="{% url "index" %}" class="flex items-center">
                 <img class="w-8 h-8 mr-2" src="{% static 'logo.svg' %}" alt="logo">
                 <p>
-                    eEvent
+                    مای کار
                 </p>
             </a>
             <ul id="menu" class="hidden fixed top-0 right-0 px-10 py-16 bg-gray-800 z-50  md:relative md:flex md:p-0 md:bg-transparent md:flex-row md:space-x-6">
                 <li class="md:hidden z-90 fixed top-4 right-6">
                     <a href="javascript:void (0)" class="text-right text-white text-4xl" onclick="toggleMenu()">× </a>
                 </li>
-                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "index" %}">Home</a></li>
                 {% if not user.is_authenticated %}
-                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_login" %}">Login/Signup</a></li>
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_login" %}">ورود/ثبت نام</a></li>
                 {% else %}
-                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_logout" %}">Logout</a></li>
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "auth_logout" %}">خروج</a></li>
                 {% endif %}
+                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "index" %}">قطعات</a></li>
+                <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="https://www.rahvar120.ir/">پلیس</a></li>
                 {% if perms.event.add_event %}
-                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_event" %}">Create Event</a></li>
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_event" %}">ایجاد قطعه</a></li>
                 {% endif %}
                 {% if perms.event.add_discount %}                
-                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_discount" %}">Create Discount</a></li>
+                    <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_add_discount" %}">ایجاد کد تخفیف</a></li>
                 {% endif %}
                 {% for group in request.user.groups.all  %}
                     {% if group.name == "AUTH_ORGANIZER" %}
-                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_events" %}">Your Events</a></li>
-                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_discounts" %}">Your Discounts</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_events" %}">قطعات شما</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_discounts" %}">کدهای تخفیف شما</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "organizer_sells" %}">لیست فروش</a></li>
                     {% endif %}
                     {% if group.name == "AUTH_ATTENDER" %}
-                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/attender/">Your Events</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="/events/attender/">لیست خرید</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">کنترل کابین</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">موقعیت</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">سیستم ایمنی</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "switch" %}">استارت از دور</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">دریافت سرعت</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "index" %}">خرید قطعه</a></li>
                     {% endif %}  
                 {% endfor %}
             </ul>
@@ -63,6 +71,10 @@
             menu.classList.toggle('w-full');
             menu.classList.toggle('h-screen');
         }
+        function showMessage(){
+            alert('نیاز به اتصال به خودرو');
+        }
+
     </script>
 </body>
 </html>
