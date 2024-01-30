@@ -1,18 +1,13 @@
 from django.shortcuts import render, redirect
 from django.views import View
-from .models import OrganizerUser, AttenderUser, EmailConfirmation
+from .models import OrganizerUser, AttenderUser
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from .forms import AttenderSignupForm, OrganizerSignupForm
 from django.contrib.auth.models import Group
 from eEvent import settings
-from datetime import datetime, timedelta
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils import timezone
 
 import logging
-import uuid
 
 log = logging.getLogger(__name__)
 
