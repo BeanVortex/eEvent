@@ -18,7 +18,5 @@ urlpatterns = [
     path("attender/<int:eid>/", views.AttenderEvents.as_view(), name="attender_events_post"),
     path("attender/pay/<int:eid>/", views.AttenderPayEvents.as_view()),
     path("<int:eid>/", views.viewEvent),
-    path("switch/", views.switch, name="switch"),
-
     path("search/", views.searchByTitle, name="search")
 ]

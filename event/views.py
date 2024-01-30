@@ -349,6 +349,3 @@ def searchByTitle(req):
         events = Event.events.allTitleContains(title)
         return render(req, "event/event_list.html", {"events": events})
     
-def switch(req):
-
-    return render(req, "event/start.html", {})
