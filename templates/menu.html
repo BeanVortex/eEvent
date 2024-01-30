@@ -48,7 +48,7 @@
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">کنترل کابین</a></li>
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">موقعیت</a></li>
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">سیستم ایمنی</a></li>
-                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "switch" %}">استارت از دور</a></li>
+                        <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">استارت از دور</a></li>
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="" onclick="showMessage()">دریافت سرعت</a></li>
                         <li><a class="text-white opacity-70 hover:opacity-100 duration-300" href="{% url "index" %}">خرید قطعه</a></li>
                     {% endif %}  
@@ -72,7 +72,7 @@
             menu.classList.toggle('h-screen');
         }
         function showMessage(){
-            alert('نیاز به اتصال به خودرو');
+            alert('نیاز به اتصال به خودرو. برای اتصال به نمایندگی مراجعه کنید');
         }
 
     </script>

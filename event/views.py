@@ -53,8 +53,6 @@ class AddEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
             log.error(str(e))
             return render(req, "event/event_save.html", {"form": form, "status":"fail", "message": str(e)})
 
-
-
 class EditEventOrganizer(LoginRequiredMixin, PermissionRequiredMixin, View):
     login_url = "/auth/login/"
     permission_required = "event.change_event"
